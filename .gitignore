@@ -2,8 +2,6 @@
 node_modules/
 
 # Capacitor generated
-android/
-ios/
 
 # Logs
 npm-debug.log*
