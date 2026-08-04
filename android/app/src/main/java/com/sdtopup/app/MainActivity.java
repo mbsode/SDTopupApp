@@ -23,6 +23,7 @@ public class MainActivity extends BridgeActivity {
     private long backPressedTime = 0;
     private static final long BACK_PRESS_INTERVAL = 2000; // 2 seconds
     private ProgressBar loadingBar;
+    private FrameLayout loadingOverlay;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void setupLoadingBar() {
-        loadingBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        loadingBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
         loadingBar.setIndeterminate(true);
 
         if (loadingBar.getIndeterminateDrawable() != null) {
@@ -40,12 +41,23 @@ public class MainActivity extends BridgeActivity {
                     Color.parseColor("#1D6AFF"), PorterDuff.Mode.SRC_IN);
         }
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 8);
-        params.gravity = Gravity.TOP;
+        FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        spinnerParams.gravity = Gravity.CENTER;
+        loadingBar.setLayoutParams(spinnerParams);
         loadingBar.setVisibility(View.GONE);
 
-        addContentView(loadingBar, params);
+        FrameLayout overlay = new FrameLayout(this);
+        overlay.setBackgroundColor(Color.parseColor("#40021A3C"));
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        overlay.addView(loadingBar);
+        overlay.setVisibility(View.GONE);
+
+        loadingOverlay = overlay;
+
+        addContentView(overlay, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private void setupWebViewLoadingListener() {
@@ -58,7 +70,7 @@ public class MainActivity extends BridgeActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 runOnUiThread(() -> {
-                    if (loadingBar != null) loadingBar.setVisibility(View.VISIBLE);
+                    if (loadingOverlay != null) loadingOverlay.setVisibility(View.VISIBLE);
                 });
             }
 
@@ -66,7 +78,7 @@ public class MainActivity extends BridgeActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 runOnUiThread(() -> {
-                    if (loadingBar != null) loadingBar.setVisibility(View.GONE);
+                    if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
                 });
             }
         });
