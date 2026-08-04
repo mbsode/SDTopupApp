@@ -5,5 +5,14 @@
   "server": {
     "url": "https://sdtopup.com.ng",
     "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#021A3C",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
   }
 }
