@@ -4,7 +4,10 @@
   "webDir": "www",
   "server": {
     "url": "https://sdtopup.com.ng",
-    "cleartext": false
+    "cleartext": false,
+    "allowNavigation": [
+      "market.sdtopup.com.ng"
+    ]
   },
   "plugins": {
     "SplashScreen": {
