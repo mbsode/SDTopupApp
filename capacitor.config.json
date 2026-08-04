@@ -1,5 +1,9 @@
 {
   "appId": "com.sdtopup.app",
   "appName": "SD Topup",
-  "webDir": "www"
+  "webDir": "www",
+  "server": {
+    "url": "https://sdtopup.com.ng",
+    "cleartext": false
+  }
 }
