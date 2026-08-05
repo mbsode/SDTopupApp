@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
@@ -23,9 +25,39 @@ public class MainActivity extends BridgeActivity {
 
     private long backPressedTime = 0;
     private static final long BACK_PRESS_INTERVAL = 2000; // 2 seconds
+    private static final String SITE_URL = "https://sdtopup.com.ng";
     private ProgressBar loadingBar;
     private FrameLayout loadingOverlay;
     private boolean isFirstPageLoad = true;
+
+    private static final String OFFLINE_HTML =
+        "<!DOCTYPE html><html><head><meta charset='UTF-8'>" +
+        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+        "<style>" +
+        "*{box-sizing:border-box;margin:0;padding:0}" +
+        "body{font-family:Arial,sans-serif;min-height:100vh;background:#021A3C;color:#fff;" +
+        "display:flex;align-items:center;justify-content:center;padding:24px}" +
+        ".wrap{text-align:center;max-width:340px}" +
+        ".icon{width:88px;height:88px;border-radius:26px;margin:0 auto 22px;display:flex;" +
+        "align-items:center;justify-content:center;" +
+        "background:linear-gradient(145deg,#1d6aff,#0891b2);" +
+        "box-shadow:0 18px 45px rgba(29,106,255,.32)}" +
+        ".icon svg{width:42px;height:42px}" +
+        "h1{font-size:22px;font-weight:800;margin-bottom:10px}" +
+        "p{color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin-bottom:26px}" +
+        "button{background:linear-gradient(135deg,#1d6aff,#0891b2);color:#fff;border:none;" +
+        "border-radius:16px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;" +
+        "box-shadow:0 14px 32px rgba(29,106,255,.26)}" +
+        "</style></head><body>" +
+        "<div class='wrap'>" +
+        "<div class='icon'><svg viewBox='0 0 24 24' fill='none' stroke='#fff' stroke-width='2' " +
+        "stroke-linecap='round' stroke-linejoin='round'>" +
+        "<path d='M1 9a17 17 0 0 1 22 0M5 12.5a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0'/>" +
+        "<line x1='12' y1='20' x2='12.01' y2='20'/><line x1='1' y1='1' x2='23' y2='23'/></svg></div>" +
+        "<h1>You're Offline</h1>" +
+        "<p>SD Topup needs an internet connection. Please check your network and try again.</p>" +
+        "<button onclick='AndroidRetry.retry()'>Try Again</button>" +
+        "</div></body></html>";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,9 +117,17 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void setupWebViewLoadingListener() {
-        if (getBridge() == null) return;
+        if (getBridge() == null || getBridge().getWebView() == null) return;
 
         Bridge bridge = getBridge();
+        WebView webView = bridge.getWebView();
+
+        webView.addJavascriptInterface(new Object() {
+            @android.webkit.JavascriptInterface
+            public void retry() {
+                runOnUiThread(() -> webView.loadUrl(SITE_URL));
+            }
+        }, "AndroidRetry");
 
         bridge.setWebViewClient(new BridgeWebViewClient(bridge) {
             @Override
@@ -113,7 +153,21 @@ public class MainActivity extends BridgeActivity {
                     if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
                 });
             }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+
+                if (request.isForMainFrame()) {
+                    runOnUiThread(() -> showOfflinePage(view));
+                }
+            }
         });
+    }
+
+    private void showOfflinePage(WebView view) {
+        if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
+        view.loadDataWithBaseURL(null, OFFLINE_HTML, "text/html", "UTF-8", null);
     }
 
     @Override
