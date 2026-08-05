@@ -18,3 +18,8 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Release signing (NEVER commit these)
+*.jks
+*.keystore
+keystore.properties
