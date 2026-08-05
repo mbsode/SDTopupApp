@@ -22,3 +22,29 @@ workflows:
 
     artifacts:
       - android/app/build/outputs/apk/debug/*.apk
+
+  android-release:
+    name: Android Release AAB
+
+    environment:
+      android_signing:
+        - sdtopup-release
+      java: 21
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+
+      - name: Sync Capacitor
+        script: |
+          npx cap sync android
+
+      - name: Build Release AAB
+        script: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew bundleRelease
+
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
