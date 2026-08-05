@@ -25,6 +25,7 @@ public class MainActivity extends BridgeActivity {
     private static final long BACK_PRESS_INTERVAL = 2000; // 2 seconds
     private ProgressBar loadingBar;
     private FrameLayout loadingOverlay;
+    private boolean isFirstPageLoad = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,6 +93,11 @@ public class MainActivity extends BridgeActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
+
+                if (isFirstPageLoad) {
+                    return;
+                }
+
                 runOnUiThread(() -> {
                     if (loadingOverlay != null) loadingOverlay.setVisibility(View.VISIBLE);
                 });
@@ -100,6 +106,9 @@ public class MainActivity extends BridgeActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+
+                isFirstPageLoad = false;
+
                 runOnUiThread(() -> {
                     if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
                 });
