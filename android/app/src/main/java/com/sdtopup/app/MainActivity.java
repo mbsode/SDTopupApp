@@ -117,52 +117,8 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void setupWebViewLoadingListener() {
-        if (getBridge() == null || getBridge().getWebView() == null) return;
-
-        Bridge bridge = getBridge();
-        WebView webView = bridge.getWebView();
-
-        webView.addJavascriptInterface(new Object() {
-            @android.webkit.JavascriptInterface
-            public void retry() {
-                runOnUiThread(() -> webView.loadUrl(SITE_URL));
-            }
-        }, "AndroidRetry");
-
-        bridge.setWebViewClient(new BridgeWebViewClient(bridge) {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-
-                if (isFirstPageLoad) {
-                    return;
-                }
-
-                runOnUiThread(() -> {
-                    if (loadingOverlay != null) loadingOverlay.setVisibility(View.VISIBLE);
-                });
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-
-                isFirstPageLoad = false;
-
-                runOnUiThread(() -> {
-                    if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
-                });
-            }
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-
-                if (request.isForMainFrame()) {
-                    runOnUiThread(() -> showOfflinePage(view));
-                }
-            }
-        });
+        // TEMPORARILY DISABLED to test splash screen conflict
+        return;
     }
 
     private void showOfflinePage(WebView view) {
