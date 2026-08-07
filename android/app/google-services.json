@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "704784465895",
+    "project_id": "sd-topup-ca590",
+    "storage_bucket": "sd-topup-ca590.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:704784465895:android:3ed5ef91e0677beea38742",
+        "android_client_info": {
+          "package_name": "com.sdtopup.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcbSdLFVKxkvpakpaI_CarIOqVao8RUQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

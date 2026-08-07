@@ -1,5 +1,6 @@
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 (function () {
   if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) {
@@ -75,6 +76,47 @@ import { SecureStorage } from '@aparajita/capacitor-secure-storage';
     });
   }
 
+  async function registerPushNotifications() {
+    try {
+      const permStatus = await PushNotifications.checkPermissions();
+
+      let granted = permStatus.receive === 'granted';
+
+      if (!granted) {
+        const requestResult = await PushNotifications.requestPermissions();
+        granted = requestResult.receive === 'granted';
+      }
+
+      if (!granted) {
+        return { status: false, message: 'Notification permission not granted.' };
+      }
+
+      return new Promise((resolve) => {
+        PushNotifications.addListener('registration', async (token) => {
+          try {
+            await fetch('/api/save_push_token.php', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: token.value, platform: 'android' })
+            });
+            resolve({ status: true, token: token.value });
+          } catch (err) {
+            resolve({ status: false, message: 'Could not save push token.' });
+          }
+        });
+
+        PushNotifications.addListener('registrationError', (error) => {
+          resolve({ status: false, message: error.error || 'Registration failed.' });
+        });
+
+        PushNotifications.register();
+      });
+    } catch (error) {
+      return { status: false, message: error.message || 'Push registration failed.' };
+    }
+  }
+
   window.SDAuthBridge = {
     isFingerprintEnabled,
     saveCredentials,
@@ -84,6 +126,7 @@ import { SecureStorage } from '@aparajita/capacitor-secure-storage';
     enablePurchaseFingerprint,
     getStoredPurchasePin,
     clearPurchasePin,
-    nativeFingerprintPrompt
+    nativeFingerprintPrompt,
+    registerPushNotifications
   };
 })();

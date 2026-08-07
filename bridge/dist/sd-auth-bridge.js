@@ -1210,11 +1210,28 @@
     }
   });
 
+  // node_modules/@capacitor/push-notifications/dist/esm/definitions.js
+  var init_definitions4 = __esm({
+    "node_modules/@capacitor/push-notifications/dist/esm/definitions.js"() {
+    }
+  });
+
+  // node_modules/@capacitor/push-notifications/dist/esm/index.js
+  var PushNotifications;
+  var init_esm4 = __esm({
+    "node_modules/@capacitor/push-notifications/dist/esm/index.js"() {
+      init_dist();
+      init_definitions4();
+      PushNotifications = registerPlugin("PushNotifications", {});
+    }
+  });
+
   // bridge/sd-auth-source.js
   var require_sd_auth_source = __commonJS({
     "bridge/sd-auth-source.js"() {
       init_esm2();
       init_esm3();
+      init_esm4();
       (function() {
         if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) {
           return;
@@ -1292,6 +1309,40 @@
             allowDeviceCredential: false
           });
         }
+        async function registerPushNotifications() {
+          try {
+            const permStatus = await PushNotifications.checkPermissions();
+            let granted = permStatus.receive === "granted";
+            if (!granted) {
+              const requestResult = await PushNotifications.requestPermissions();
+              granted = requestResult.receive === "granted";
+            }
+            if (!granted) {
+              return { status: false, message: "Notification permission not granted." };
+            }
+            return new Promise((resolve) => {
+              PushNotifications.addListener("registration", async (token) => {
+                try {
+                  await fetch("/api/save_push_token.php", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: token.value, platform: "android" })
+                  });
+                  resolve({ status: true, token: token.value });
+                } catch (err) {
+                  resolve({ status: false, message: "Could not save push token." });
+                }
+              });
+              PushNotifications.addListener("registrationError", (error) => {
+                resolve({ status: false, message: error.error || "Registration failed." });
+              });
+              PushNotifications.register();
+            });
+          } catch (error) {
+            return { status: false, message: error.message || "Push registration failed." };
+          }
+        }
         window.SDAuthBridge = {
           isFingerprintEnabled,
           saveCredentials,
@@ -1301,7 +1352,8 @@
           enablePurchaseFingerprint,
           getStoredPurchasePin,
           clearPurchasePin,
-          nativeFingerprintPrompt
+          nativeFingerprintPrompt,
+          registerPushNotifications
         };
       })();
     }
