@@ -1,6 +1,7 @@
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { Contacts } from '@capacitor-community/contacts';
 
 (function () {
   if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) {
@@ -117,6 +118,37 @@ import { PushNotifications } from '@capacitor/push-notifications';
     }
   }
 
+  async function pickPhoneContact() {
+    try {
+      const permStatus = await Contacts.requestPermissions();
+
+      if (permStatus.contacts !== 'granted') {
+        return { status: false, message: 'Contacts permission not granted.' };
+      }
+
+      const result = await Contacts.pickContact({
+        projection: { name: true, phones: true }
+      });
+
+      if (!result || !result.contact) {
+        return { status: false, message: 'No contact selected.' };
+      }
+
+      const phones = result.contact.phones || [];
+      if (phones.length === 0) {
+        return { status: false, message: 'Selected contact has no phone number.' };
+      }
+
+      return {
+        status: true,
+        phone: phones[0].number || '',
+        name: (result.contact.name && result.contact.name.display) || ''
+      };
+    } catch (error) {
+      return { status: false, message: error.message || 'Contact picker was cancelled.' };
+    }
+  }
+
   window.SDAuthBridge = {
     isFingerprintEnabled,
     saveCredentials,
@@ -127,6 +159,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
     getStoredPurchasePin,
     clearPurchasePin,
     nativeFingerprintPrompt,
-    registerPushNotifications
+    registerPushNotifications,
+    pickPhoneContact
   };
 })();

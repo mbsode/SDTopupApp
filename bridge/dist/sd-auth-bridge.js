@@ -1226,12 +1226,103 @@
     }
   });
 
+  // node_modules/@capacitor-community/contacts/dist/esm/definitions.js
+  var PhoneType, EmailType, PostalAddressType;
+  var init_definitions5 = __esm({
+    "node_modules/@capacitor-community/contacts/dist/esm/definitions.js"() {
+      (function(PhoneType2) {
+        PhoneType2["Home"] = "home";
+        PhoneType2["Work"] = "work";
+        PhoneType2["Other"] = "other";
+        PhoneType2["Custom"] = "custom";
+        PhoneType2["Mobile"] = "mobile";
+        PhoneType2["FaxWork"] = "fax_work";
+        PhoneType2["FaxHome"] = "fax_home";
+        PhoneType2["Pager"] = "pager";
+        PhoneType2["Callback"] = "callback";
+        PhoneType2["Car"] = "car";
+        PhoneType2["CompanyMain"] = "company_main";
+        PhoneType2["Isdn"] = "isdn";
+        PhoneType2["Main"] = "main";
+        PhoneType2["OtherFax"] = "other_fax";
+        PhoneType2["Radio"] = "radio";
+        PhoneType2["Telex"] = "telex";
+        PhoneType2["TtyTdd"] = "tty_tdd";
+        PhoneType2["WorkMobile"] = "work_mobile";
+        PhoneType2["WorkPager"] = "work_pager";
+        PhoneType2["Assistant"] = "assistant";
+        PhoneType2["Mms"] = "mms";
+      })(PhoneType || (PhoneType = {}));
+      (function(EmailType2) {
+        EmailType2["Home"] = "home";
+        EmailType2["Work"] = "work";
+        EmailType2["Other"] = "other";
+        EmailType2["Custom"] = "custom";
+        EmailType2["Mobile"] = "mobile";
+      })(EmailType || (EmailType = {}));
+      (function(PostalAddressType2) {
+        PostalAddressType2["Home"] = "home";
+        PostalAddressType2["Work"] = "work";
+        PostalAddressType2["Other"] = "other";
+        PostalAddressType2["Custom"] = "custom";
+      })(PostalAddressType || (PostalAddressType = {}));
+    }
+  });
+
+  // node_modules/@capacitor-community/contacts/dist/esm/web.js
+  var web_exports4 = {};
+  __export(web_exports4, {
+    ContactsWeb: () => ContactsWeb
+  });
+  var ContactsWeb;
+  var init_web4 = __esm({
+    "node_modules/@capacitor-community/contacts/dist/esm/web.js"() {
+      init_dist();
+      ContactsWeb = class extends WebPlugin {
+        async checkPermissions() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async requestPermissions() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async getContact() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async getContacts() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async createContact() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async deleteContact() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+        async pickContact() {
+          throw this.unimplemented("Not implemented on web.");
+        }
+      };
+    }
+  });
+
+  // node_modules/@capacitor-community/contacts/dist/esm/index.js
+  var Contacts;
+  var init_esm5 = __esm({
+    "node_modules/@capacitor-community/contacts/dist/esm/index.js"() {
+      init_dist();
+      init_definitions5();
+      Contacts = registerPlugin("Contacts", {
+        web: () => Promise.resolve().then(() => (init_web4(), web_exports4)).then((m) => new m.ContactsWeb())
+      });
+    }
+  });
+
   // bridge/sd-auth-source.js
   var require_sd_auth_source = __commonJS({
     "bridge/sd-auth-source.js"() {
       init_esm2();
       init_esm3();
       init_esm4();
+      init_esm5();
       (function() {
         if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) {
           return;
@@ -1343,6 +1434,31 @@
             return { status: false, message: error.message || "Push registration failed." };
           }
         }
+        async function pickPhoneContact() {
+          try {
+            const permStatus = await Contacts.requestPermissions();
+            if (permStatus.contacts !== "granted") {
+              return { status: false, message: "Contacts permission not granted." };
+            }
+            const result = await Contacts.pickContact({
+              projection: { name: true, phones: true }
+            });
+            if (!result || !result.contact) {
+              return { status: false, message: "No contact selected." };
+            }
+            const phones = result.contact.phones || [];
+            if (phones.length === 0) {
+              return { status: false, message: "Selected contact has no phone number." };
+            }
+            return {
+              status: true,
+              phone: phones[0].number || "",
+              name: result.contact.name && result.contact.name.display || ""
+            };
+          } catch (error) {
+            return { status: false, message: error.message || "Contact picker was cancelled." };
+          }
+        }
         window.SDAuthBridge = {
           isFingerprintEnabled,
           saveCredentials,
@@ -1353,7 +1469,8 @@
           getStoredPurchasePin,
           clearPurchasePin,
           nativeFingerprintPrompt,
-          registerPushNotifications
+          registerPushNotifications,
+          pickPhoneContact
         };
       })();
     }
