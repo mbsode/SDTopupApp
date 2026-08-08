@@ -48,3 +48,29 @@ workflows:
 
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
+
+  android-release-apk:
+    name: Android Release APK (Direct Download)
+
+    environment:
+      android_signing:
+        - sdtopup-release
+      java: 21
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+
+      - name: Sync Capacitor
+        script: |
+          npx cap sync android
+
+      - name: Build Release APK
+        script: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
