@@ -1,6 +1,6 @@
+
 package com.sdtopup.app;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -9,26 +9,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
-import com.getcapacitor.BridgeWebViewClient;
 
 public class MainActivity extends BridgeActivity {
 
     private long backPressedTime = 0;
-    private static final long BACK_PRESS_INTERVAL = 2000; // 2 seconds
+    private static final long BACK_PRESS_INTERVAL = 2000;
     private static final String SITE_URL = "https://sdtopup.com.ng";
+
     private ProgressBar loadingBar;
     private FrameLayout loadingOverlay;
-    private boolean isFirstPageLoad = true;
 
     private static final String OFFLINE_HTML =
         "<!DOCTYPE html><html><head><meta charset='UTF-8'>" +
@@ -56,7 +52,7 @@ public class MainActivity extends BridgeActivity {
         "<line x1='12' y1='20' x2='12.01' y2='20'/><line x1='1' y1='1' x2='23' y2='23'/></svg></div>" +
         "<h1>You're Offline</h1>" +
         "<p>SD Topup needs an internet connection. Please check your network and try again.</p>" +
-        "<button onclick='AndroidRetry.retry()'>Try Again</button>" +
+        "<button onclick=\"window.location.href='https://sdtopup.com.ng'\">Try Again</button>" +
         "</div></body></html>";
 
     @Override
@@ -72,7 +68,9 @@ public class MainActivity extends BridgeActivity {
         cookieManager.setAcceptCookie(true);
 
         if (getBridge() != null && getBridge().getWebView() != null) {
-            cookieManager.setAcceptThirdPartyCookies(getBridge().getWebView(), true);
+            cookieManager.setAcceptThirdPartyCookies(
+                getBridge().getWebView(), true
+            );
         }
     }
 
@@ -89,51 +87,79 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void setupLoadingBar() {
-        loadingBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
+        loadingBar = new ProgressBar(
+            this, null, android.R.attr.progressBarStyleLarge
+        );
+
         loadingBar.setIndeterminate(true);
 
         if (loadingBar.getIndeterminateDrawable() != null) {
             loadingBar.getIndeterminateDrawable().setColorFilter(
-                    Color.parseColor("#1D6AFF"), PorterDuff.Mode.SRC_IN);
+                Color.parseColor("#1D6AFF"),
+                PorterDuff.Mode.SRC_IN
+            );
         }
 
-        FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams spinnerParams =
+            new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+
         spinnerParams.gravity = Gravity.CENTER;
         loadingBar.setLayoutParams(spinnerParams);
         loadingBar.setVisibility(View.GONE);
 
         FrameLayout overlay = new FrameLayout(this);
         overlay.setBackgroundColor(Color.parseColor("#40021A3C"));
+
         overlay.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
         overlay.addView(loadingBar);
         overlay.setVisibility(View.GONE);
 
         loadingOverlay = overlay;
 
         addContentView(overlay, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ));
     }
 
     private void setupWebViewLoadingListener() {
-        // TEMPORARILY DISABLED to test splash screen conflict
-        return;
+        // Loading listener remains disabled pending splash-screen testing.
     }
 
     private void showOfflinePage(WebView view) {
-        if (loadingOverlay != null) loadingOverlay.setVisibility(View.GONE);
-        view.loadDataWithBaseURL(null, OFFLINE_HTML, "text/html", "UTF-8", null);
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
+
+        view.loadDataWithBaseURL(
+            SITE_URL,
+            OFFLINE_HTML,
+            "text/html",
+            "UTF-8",
+            null
+        );
     }
 
     @Override
     public void onBackPressed() {
-        if (getBridge() != null && getBridge().getWebView() != null && getBridge().getWebView().canGoBack()) {
+        if (getBridge() != null
+            && getBridge().getWebView() != null
+            && getBridge().getWebView().canGoBack()) {
+
             getBridge().getWebView().goBack();
             return;
         }
 
-        if (backPressedTime + BACK_PRESS_INTERVAL > System.currentTimeMillis()) {
+        if (backPressedTime + BACK_PRESS_INTERVAL >
+            System.currentTimeMillis()) {
+
             super.onBackPressed();
             return;
         }
@@ -146,7 +172,10 @@ public class MainActivity extends BridgeActivity {
         try {
             LayoutInflater inflater = getLayoutInflater();
             ViewGroup root = findViewById(android.R.id.content);
-            View layout = inflater.inflate(R.layout.toast_custom, root, false);
+
+            View layout = inflater.inflate(
+                R.layout.toast_custom, root, false
+            );
 
             TextView text = layout.findViewById(R.id.toast_text);
             text.setText(message);
@@ -154,10 +183,18 @@ public class MainActivity extends BridgeActivity {
             Toast toast = new Toast(getApplicationContext());
             toast.setDuration(Toast.LENGTH_SHORT);
             toast.setView(layout);
-            toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
+            toast.setGravity(
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL,
+                0,
+                120
+            );
+
             toast.show();
+
         } catch (Exception e) {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                this, message, Toast.LENGTH_SHORT
+            ).show();
         }
     }
 }
