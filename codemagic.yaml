@@ -15,13 +15,13 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Repair Android SDK Build Tools
+      - name: Install Android Build Tools 35
         script: |
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/share/android-sdk}}"
-          SDKMANAGER="$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
 
-          if [ -z "$SDKMANAGER" ]; then
-            echo "Android SDK Manager not found"
+          if [ ! -x "$SDKMANAGER" ]; then
+            echo "Modern Android SDK Manager not found."
             exit 1
           fi
 
@@ -55,13 +55,13 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Repair Android SDK Build Tools
+      - name: Install Android Build Tools 35
         script: |
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/share/android-sdk}}"
-          SDKMANAGER="$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
 
-          if [ -z "$SDKMANAGER" ]; then
-            echo "Android SDK Manager not found"
+          if [ ! -x "$SDKMANAGER" ]; then
+            echo "Modern Android SDK Manager not found."
             exit 1
           fi
 
@@ -95,13 +95,13 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Repair Android SDK Build Tools
+      - name: Install Android Build Tools 35
         script: |
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/share/android-sdk}}"
-          SDKMANAGER="$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
 
-          if [ -z "$SDKMANAGER" ]; then
-            echo "Android SDK Manager not found"
+          if [ ! -x "$SDKMANAGER" ]; then
+            echo "Modern Android SDK Manager not found."
             exit 1
           fi
 
